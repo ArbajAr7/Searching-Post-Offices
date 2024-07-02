@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Searching Post Offices</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+    </script>
+</head>
+<body>
+    <div id="main_div">
+        <div id="left_div">
+            <div id="heading_subheading">
+                <p id="page_first_heading">
+                    Post Office Application.
+                </p>
+                <p id="page_first_subheading">
+                    This Application Allows you to extract information about the nearest Post Offices, based on your location.
+                </p>
+                <img id="imagelogo" src="welcomeLogo.svg">
+            </div>
+            
+        </div>
+        <div id="right_div">
+            <p id="firstpage_ip_id">Your Current IP Address is <span id="span_id_first_page" class="span_id"></span></p>
+            <button id="get_startedbtn" type="button" onclick="location.assign('SecondPage.html')">Get Started</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq6YomgUwqxtFJ51SliZ4FzgZdMwQKkNI&callback=initMap&v=beta" async defer></script>
+    <script src="https://kit.fontawesome.com/a6110cc4e0.js" crossorigin="anonymous"></script>
+</body>
+</html>
