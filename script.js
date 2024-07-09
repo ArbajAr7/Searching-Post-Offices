@@ -1,119 +1,117 @@
-let my_ip ="";
-let lati = "";
-let longi = "";
-$(document).ready(()=>{
-    $.getJSON("https://ipinfo.io",
-    function (response) {
-        $('#span_id_first_page').html(`${response.ip}`);
-        $('#span_id_second_page').html(`${response.ip}`)
-        my_ip = response.ip;
-    }, "jsonp");
-}) 
+let postOfficesData;
 
-const token = '335d64a4de1833';
-const url = `https://ipinfo.io/${my_ip}?token=${token}`;
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelector(".detail").style.display = `none`;
 
-fetch(url)
+  fetch("https://api.ipify.org?format=json")
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      let IPaddress = data.ip;
+
+      let ipContainer = document.querySelector(".ip-address");
+      ipContainer.innerHTML = `Your Current IP Address is <span class='white'>${IPaddress}</span>`;
+
+      fetchUserInfo(IPaddress);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      document.querySelector(".ip-address").textContent = "Unable to get IP address";
+    });
+
+  let searchInput = document.getElementById('search-bar');
+  searchInput.addEventListener('input', findPostOffice);
+});
+
+function fetchUserInfo(ip) {
+  let startBtn = document.querySelector(".btn-submit");
+  startBtn.addEventListener("click", function () {
+    document.querySelector(".home").style.display = `none`;
+    document.querySelector(".detail").style.display = `block`;
+  });
+
+  fetch(`https://ipapi.co/${ip}/json/`)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("User Information:", data);
+
+      let longitude = data.longitude;
+      let latitude = data.latitude;
+
+      DisplayUserLocationOnGoogleMap(longitude, latitude);
+      postOfficeFound(data.postal);
+
+      let top_detail = document.querySelector(".top-detail");
+      let ip2 = document.querySelector(".ip2");
+
+      ip2.innerHTML = `IP Address : <span class="white">${data.ip}</span>`;
+
+      top_detail.innerHTML = `
+        <div class="lat-long">
+          <p class="top-detail-p">Lat: ${data.latitude}</p>
+          <p class="top-detail-p">Long: ${data.longitude}</p>
+        </div>
+        <div class="city-region">
+          <p class="top-detail-p">City: ${data.city}</p>
+          <p class="top-detail-p">Region: ${data.region}</p>
+        </div>
+        <div class="org-host">
+          <p class="top-detail-p">Organisation: ${data.org}</p>
+          <p class="top-detail-p">Hostname: ${data.version}</p>
+        </div>
+      `;
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function DisplayUserLocationOnGoogleMap(longi, latit) {
+  let google_ifram = document.querySelector(".google_ifram");
+
+  google_ifram.innerHTML = `
+    <p class="heading2">Your Current Location</p>
+    <iframe src="https://maps.google.com/maps?q=${latit},${longi}&z=15&output=embed" width="100%" height="470" frameborder="0" style="border:0"></iframe>`;
+}
+
+function postOfficeFound(pincode) {
+  fetch(`https://api.postalpincode.in/pincode/${pincode}`)
     .then(response => response.json())
     .then(data => {
-        console.log(data);
-        const [latitude, longitude] = (data.loc).split(',');
-        lati = parseFloat(latitude);
-        longi = parseFloat(longitude);
-        const d = new Date();
-        // pincode = parseInt(data.postal);
-        postOfficeFound(data.postal);
-        // console.log(pincode);
-        document.getElementById('dateandtime_span').innerHTML = `${d.getFullYear()}-${d.getMonth()}-${d.getDay()} / ${d.getHours()}:${d.getMinutes()}`;
-        document.getElementById('time_zone_span').innerHTML = `${data.timezone}`;
-        document.getElementById('pincode_span').innerHTML = `${data.postal}`;
-        document.getElementById('lat_span').innerHTML = `${latitude}`;
-        document.getElementById('long_span').innerHTML = `${longitude}`;
-        document.getElementById('city_span').innerHTML = `${data.city}`;
-        document.getElementById('Organisation_span').innerHTML = `${data.org}`;
-        document.getElementById('region_span').innerHTML = `${data.region}`;
-        document.getElementById('hostname_span').innerHTML = `${data.timezone}`;
+      if (data && data[0] && data[0].PostOffice && Array.isArray(data[0].PostOffice)) {
+        postOfficesData = data[0].PostOffice;
+        displayPostOffices(postOfficesData);
+      } else {
+        throw new Error("Invalid data structure");
+      }
     })
     .catch(error => {
-        console.error('Error fetching IP information:', error);
+      console.error("Error:", error);
+      document.querySelector(".card_container").innerHTML = "<p class='error'>Unable to retrieve post office information.</p>";
     });
-    
-    
+}
 
+function displayPostOffices(postOffices) {
+  let card_container = document.querySelector(".card_container");
+  card_container.innerHTML = "";
 
-    function initMap() {
-        setTimeout(() => {
-        // Create a map centered at the specified latitude and longitude
-        const location = { lat: lati, lng: longi }; // Example coordinates: London
-        const map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 16,
-            center: location
-        });
+  postOffices.forEach(postOffice => {
+    card_container.innerHTML += `
+      <div class="card">
+        <p class="top-detail-p">Name: ${postOffice.Name}</p>
+        <p class="top-detail-p">Branch Type: ${postOffice.BranchType}</p>
+        <p class="top-detail-p">Delivery Status: ${postOffice.DeliveryStatus}</p>
+        <p class="top-detail-p">District: ${postOffice.District}</p>
+        <p class="top-detail-p">State: ${postOffice.State}</p>
+      </div>
+    `;
+  });
+}
 
-        // Add an Advanced Marker at the specified location
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-            position: location,
-            map: map,
-            title: "Hello world!"
-        });
-
-        // Add a simple tooltip to the marker
-        const tooltip = new google.maps.InfoWindow({
-            content: "<b>Hello world!</b><br>I am a popup."
-        });
-
-        marker.addListener("click", () => {
-            tooltip.open({
-                anchor: marker,
-                map,
-                shouldFocus: false,
-            });
-        });
-        }, "2000");
-            
-        }
-
-        function findPostOffice() {
-            let searchInput = document.getElementById('search-bar');
-            let searchTerm = searchInput.value.toLowerCase();
-            let filteredPostOffices = postOfficesData.filter(postOffice =>
-              postOffice.Name.toLowerCase().includes(searchTerm) ||
-              postOffice.BranchType.toLowerCase().includes(searchTerm)
-            );
-            displayPostOffices(filteredPostOffices);
-          }
-
-          function displayPostOffices(postOffices) {
-            let card_container = document.querySelector(".card_container");
-            card_container.innerHTML = "";
-          
-            postOffices.forEach(postOffice => {
-              card_container.innerHTML += `
-                <div class="card">
-                  <p class="top-detail-p">Name: ${postOffice.Name}</p>
-                  <p class="top-detail-p">Branch Type: ${postOffice.BranchType}</p>
-                  <p class="top-detail-p">Delivery Status: ${postOffice.DeliveryStatus}</p>
-                  <p class="top-detail-p">District: ${postOffice.District}</p>
-                  <p class="top-detail-p">State: ${postOffice.State}</p>
-                </div>
-              `;
-            });
-          }
-
-          function postOfficeFound(pincode) {
-            fetch(`https://api.postalpincode.in/pincode/${pincode}`)
-              .then(response => response.json())
-              .then(data => {
-                document.getElementById("message_span").innerHTML += `${(data[0].PostOffice).length}`;
-                if (data && data[0] && data[0].PostOffice && Array.isArray(data[0].PostOffice)) {
-                  postOfficesData = data[0].PostOffice;
-                  displayPostOffices(postOfficesData);
-                } else {
-                  throw new Error("Invalid data structure");
-                }
-              })
-              .catch(error => {
-                console.error("Error:", error);
-                document.querySelector(".card_container").innerHTML = "<p class='error'>Unable to retrieve post office information.</p>";
-              });
-          }
+function findPostOffice() {
+  let searchInput = document.getElementById('search-bar');
+  let searchTerm = searchInput.value.toLowerCase();
+  let filteredPostOffices = postOfficesData.filter(postOffice =>
+    postOffice.Name.toLowerCase().includes(searchTerm) ||
+    postOffice.BranchType.toLowerCase().includes(searchTerm)
+  );
+  displayPostOffices(filteredPostOffices);
+}
