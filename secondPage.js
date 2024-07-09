@@ -2,7 +2,7 @@ let searchInput = document.getElementById('search-bar');
   searchInput.addEventListener('input', findPostOffice);
 let ip = JSON.parse(localStorage.getItem('ip'));
 console.log(ip);
-fetch(`https://ipapi.co/${ip}/json/`)
+fetch(`https://ipapi.co/json/`)
       .then((response) => response.json())
       .then((data) => {
         console.log("User Information:", data);
