@@ -1,4 +1,3 @@
-document.addEventListener('DOMContentLoaded', function() {
 let searchInput = document.getElementById('search-bar');
   searchInput.addEventListener('input', findPostOffice);
 let ip = JSON.parse(localStorage.getItem('ip'));
@@ -88,4 +87,3 @@ function findPostOffice() {
     );
     displayPostOffices(filteredPostOffices);
 }
-});
